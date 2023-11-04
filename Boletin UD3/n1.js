@@ -3,6 +3,7 @@ function calculate() {
   const surnames = document.getElementById("surnames").value;
 
   const completeName = name + surnames;
-  const count = document.replace(/\s/g, "").length;
+  const count = document.replaceAll(" ", "");
+
   document.getElementById("result").innerHTML = "El resultado es: " + count;
 }
