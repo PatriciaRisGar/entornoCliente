@@ -27,6 +27,7 @@ function sortArrays() {
     }
   }
   sortArray.push(auxArray);
+  console.log(sortArray);
   document.getElementById("salida").innerHTML = sortArray.toString();
 }
 
