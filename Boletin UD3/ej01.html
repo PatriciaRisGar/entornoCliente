@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EJ1</title>
+  </head>
+  <body>
+    <form name="frmDatos">
+      <label>Nombre: </label>
+      <input type="text" name="nombre" />
+      <br />
+      <label>Apellidos: </label>
+      <input type="text" name="apellidos" />
+      <br />
+      <input type="button" value="Aceptar" onclick="procesarDatos()" />
+    </form>
+    <br />
+    <p id="salida"></p>
+
+    <script>
+      function procesarDatos() {
+        let nombre = frmDatos.nombre.value;
+        let apellidos = frmDatos.apellidos.value;
+        let temp, salida;
+
+        temp = nombre.replace(" ", "");
+        temp += apellidos.replace(" ", "");
+        salida = temp.length + " caracteres sin contar los espacios<br>";
+        salida += nombre.toUpperCase() + " " + apellidos.toUpperCase() + "<br>";
+        salida += nombre.toLowerCase() + " " + apellidos.toLowerCase() + "<br>";
+        salida +=
+          nombre +
+          "<br>" +
+          apellidos.slice(0, apellidos.indexOf(" ")) +
+          "<br>" +
+          apellidos.slice(apellidos.indexOf(" ")) +
+          "<br>";
+        temp = nombre.charAt(0);
+        temp += apellidos.slice(0, 3) + apellidos.slice(apellidos.indexOf(" ") + 1).slice(0, 3);
+        salida += "Nombre de Usuario: " + temp.toLowerCase();
+
+        document.getElementById("salida").innerHTML = salida;
+      }
+    </script>
+  </body>
+</html>
