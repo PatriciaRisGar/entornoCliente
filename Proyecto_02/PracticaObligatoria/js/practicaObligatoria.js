@@ -90,16 +90,20 @@ function cargaDatosIniciales() {
 	catalogo.addProducto(15, 'Salsa Alioli 350 gr (Caja de 50)', 113.75, 2);
 	catalogo.addProducto(16, 'Salsa Barbacoa 500gr (Caja de 30)', 67.5, 2);
 }
-cargaDatosIniciales();
+
 // Deberiamos controlar que el js se ejecute una vez que el DOM se haya cargado, en este caso no es necesario porque el fichero js es llamado al final del documento html.
-// Voy a crear una clase que se encarge de cargar los combobox.
+cargaDatosIniciales();
 
-const selectView = new SelectView();
-selectView.cargarComerciales(comerciales);
-selectView.cargarCategorias(categorias);
-selectView.cargarProductos(catalogo.productos);
+// Voy a crear la clase Controlador que se encarge de la vista.
+const controlador = new Controlador();
+controlador.view.cargarComerciales(comerciales);
+controlador.view.cargarCategorias(categorias);
+controlador.view.cargarProductos(catalogo.productos);
 
+//cargar clientes a su comercial
 gestor.asociarClientesAComercial(comerciales, clientes);
 
-const clienteView = new ClienteView();
-clienteView.añadirCliente(gestor.clientes[gestor.comercialActual][0]);
+//pintar cliente en html
+controlador.view.añadirCliente(gestor.clientes[gestor.comercialActual][0]);
+
+controlador.añadirEventoATeclado();
