@@ -101,7 +101,7 @@ controlador.view.cargarCategorias(categorias);
 controlador.view.cargarProductos(catalogo.productos);
 
 //cargar clientes a su comercial
-gestor.asociarClientesAComercial(comerciales, clientes);
+gestor.asociarClientesAComercial(clientes);
 
 //pintar cliente en html
 controlador.view.añadirCliente(gestor.clientes[gestor.comercialActual][0]);

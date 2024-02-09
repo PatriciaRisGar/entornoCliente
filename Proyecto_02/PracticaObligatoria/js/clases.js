@@ -153,20 +153,14 @@ class Gestor {
 
 	constructor() {}
 
-	asociarClientesAComercial(comerciales, clientes) {
-		this.#comerciales = comerciales;
-
-		// defino la longitud del array
-		for (const indiceComerciales in comerciales) {
-			this.#clientes.push([]);
-		}
-		// creo los objetos clientes y lo meto en un array auxiliar para luego añadirselo al comercial correspondiente
-		for (const cliente in clientes) {
-			const clientesObject = [];
-			for (const nombreCliente of clientes[cliente]) {
-				clientesObject.push(new Cliente(nombreCliente, false));
+	asociarClientesAComercial(clientes) {
+		for (let i = 0; i < clientes.length; i++) {
+			const clientesComercial = [];
+			const clientesComercialActual = clientes[i];
+			for (const nombreCliente of clientesComercialActual) {
+				clientesComercial.push(new Cliente(nombreCliente, false));
 			}
-			this.#clientes[cliente].push(clientesObject);
+			this.#clientes.push(clientesComercial);
 		}
 		//al inicio del programa comercial y cliente son el primero de cada array
 		this.#comercialActual = 0;
@@ -176,7 +170,7 @@ class Gestor {
 	}
 }
 
-// carga de los combobox
+
 class View {
 	#controlador;
 	constructor(controlador) {
@@ -263,7 +257,7 @@ class View {
 		const h2 = document.createElement('h2');
 		h2.textContent =
 			'Cliente ' +
-			gestor.clientes[gestor.comercialActual][0][gestor.clienteActual].nombre;
+			gestor.clientes[gestor.comercialActual][gestor.clienteActual].nombre;
 		formularioPedidos.append(h2);
 	}
 
