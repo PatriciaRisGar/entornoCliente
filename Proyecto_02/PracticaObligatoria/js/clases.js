@@ -366,21 +366,15 @@ class Controlador {
 		const producto = frmControles.productos.value;
 		const lineaPedido = new LineaPedido(unidades, producto);
 
-		// for (const comercial of gestor.pedidos) {
-		// 	for (const cliente of gestor.pedidos[comercial]) {
-		// 		for (const lineaPedido of gestor.pedidos[comercial][cliente]) {
-		// 			console.log(comercial);
-		// 			console.log(cliente);
-		// 			console.log(lineaPedido);
-		// 			if (pedido === lineaPedido) {
-		// 			}
-		// 		}
-		// 	}
-		// }
-
-		gestor.pedidos = [gestor.comercialActual];
-		gestor.pedidos.comercialActual = [gestor.clienteActual];
-		gestor.pedidos.comercialActual.clienteActual = [lineaPedido];
+		if (!gestor.pedidos[gestor.comercialActual]) {
+			gestor.pedidos[gestor.comercialActual] = [];
+		}
+		if (!gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
+			gestor.pedidos[gestor.comercialActual][gestor.clienteActual] = [];
+		}
+		gestor.pedidos[gestor.comercialActual][gestor.clienteActual].push(
+			lineaPedido
+		);
 
 		const botonesClientes = frmComercial.getElementsByTagName('button');
 		for (const boton of botonesClientes) {
@@ -389,5 +383,12 @@ class Controlador {
 			}
 		}
 		this.view.pintarPedido(lineaPedido);
+
+		console.log(gestor.pedidos);
+		// for (const comercial of gestor.pedidos) {
+		// 	console.log(gestor.pedidos);
+		// 	console.log(comercial);
+		// 	console.log(lineaPedido);
+		// }
 	};
 }
