@@ -171,6 +171,8 @@ class Gestor {
 		//al inicio del programa comercial y cliente son el primero de cada array
 		this.#comercialActual = 0;
 		this.#clienteActual = 0;
+
+		console.log(gestor.clientes);
 	}
 }
 
@@ -201,10 +203,10 @@ class View {
 			let option = document.createElement('option');
 			option.value = indice;
 			option.textContent = categoria;
-			const buffer = this;
-			option.addEventListener('click', function () {
-				buffer.cargarProductos(catalogo.productos);
-			});
+			option.addEventListener(
+				'click',
+				this.cargarProductos(catalogo.productos)
+			);
 			selectCategorias.appendChild(option);
 			indice++;
 		}
@@ -269,12 +271,15 @@ class View {
 	pintarPedido(lineaPedido) {
 		const infoPedido = document.getElementById('pedido');
 		let precioUnidad;
+		let nombreProducto;
 		for (const producto of catalogo.productos) {
 			if (producto.idProducto == lineaPedido.idProducto) {
 				precioUnidad = producto.precioUnidad;
+				nombreProducto = producto.nombreProducto;
 			}
 		}
 
+		this.limpiarPedido();
 		const div = document.createElement('div');
 		infoPedido.append(div);
 
@@ -290,27 +295,36 @@ class View {
 		const divTable = document.createElement('div');
 		div.appendChild(divTable);
 		const tabla = `
-		<table class = 'table'>
-			<thead>
-				<tr>
-					<th>Modificar</th>
-					<th>Uds.</th>
-					<th>Id.</th>
-					<th>Producto</th>
-					<th>Precio</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>Modificar</td>
-					<td></td>
-					<td>Id.</td>
-					<td>Producto</td>
-					<td>Precio</td>
-				</tr>
-			</tbody>
-		</table>`;
+			<table>
+				<thead>
+					<tr>
+						<th>Modificar</th>
+						<th>Uds.</th>
+						<th>Id.</th>
+						<th>Producto</th>
+						<th>Precio</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Modificar</td>
+						<td>${lineaPedido.unidades}</td>
+						<td>${lineaPedido.idProducto}</td>
+						<td>${nombreProducto}</td>
+						<td>${precioUnidad}</td>
+					</tr>
+				</tbody>
+			</table>`;
 		divTable.innerHTML = tabla;
+	}
+
+	//Elimino el div generado en pedido
+	limpiarPedido() {
+		const infoPedido = document.getElementById('pedido');
+		const divHijo = infoPedido.querySelector('div');
+		if (divHijo) {
+			divHijo.parentNode.removeChild(divHijo);
+		}
 	}
 }
 
@@ -352,6 +366,18 @@ class Controlador {
 		const producto = frmControles.productos.value;
 		const lineaPedido = new LineaPedido(unidades, producto);
 
+		// for (const comercial of gestor.pedidos) {
+		// 	for (const cliente of gestor.pedidos[comercial]) {
+		// 		for (const lineaPedido of gestor.pedidos[comercial][cliente]) {
+		// 			console.log(comercial);
+		// 			console.log(cliente);
+		// 			console.log(lineaPedido);
+		// 			if (pedido === lineaPedido) {
+		// 			}
+		// 		}
+		// 	}
+		// }
+
 		gestor.pedidos = [gestor.comercialActual];
 		gestor.pedidos.comercialActual = [gestor.clienteActual];
 		gestor.pedidos.comercialActual.clienteActual = [lineaPedido];
@@ -362,10 +388,6 @@ class Controlador {
 				boton.classList.add('pendiente');
 			}
 		}
-		console.log(lineaPedido);
-		console.log(gestor);
-		console.log(botonesClientes);
-
 		this.view.pintarPedido(lineaPedido);
 	};
 }
