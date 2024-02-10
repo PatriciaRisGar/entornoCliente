@@ -50,12 +50,7 @@ class Catalogo {
 	constructor() {}
 
 	addProducto(idProducto, nombreProducto, precioUnidad, idCategoria) {
-		const oProducto = new Producto(
-			idProducto,
-			nombreProducto,
-			precioUnidad,
-			idCategoria
-		);
+		const oProducto = new Producto(idProducto, nombreProducto, precioUnidad, idCategoria);
 		this.#productos.push(oProducto);
 	}
 }
@@ -165,11 +160,8 @@ class Gestor {
 		//al inicio del programa comercial y cliente son el primero de cada array
 		this.#comercialActual = 0;
 		this.#clienteActual = 0;
-
-		console.log(gestor.clientes);
 	}
 }
-
 
 class View {
 	#controlador;
@@ -197,10 +189,7 @@ class View {
 			let option = document.createElement('option');
 			option.value = indice;
 			option.textContent = categoria;
-			option.addEventListener(
-				'click',
-				this.cargarProductos(catalogo.productos)
-			);
+			option.addEventListener('click', this.cargarProductos(catalogo.productos));
 			selectCategorias.appendChild(option);
 			indice++;
 		}
@@ -222,7 +211,7 @@ class View {
 	}
 
 	// carga de clientes
-	añadirCliente(clientes) {
+	añadirCliente() {
 		const formulario = document.getElementById('frmComercial');
 
 		//Si hay clientes los borro antes de añadir
@@ -237,7 +226,7 @@ class View {
 		formulario.appendChild(div);
 
 		let indice = 0;
-		for (const cliente of clientes) {
+		for (const cliente of gestor.clientes[gestor.comercialActual]) {
 			const boton = document.createElement('button');
 			boton.value = indice;
 			boton.textContent = cliente.nombre;
@@ -255,9 +244,7 @@ class View {
 			formularioPedidos.getElementsByTagName('h2')[0].remove();
 		}
 		const h2 = document.createElement('h2');
-		h2.textContent =
-			'Cliente ' +
-			gestor.clientes[gestor.comercialActual][gestor.clienteActual].nombre;
+		h2.textContent = 'Cliente ' + gestor.clientes[gestor.comercialActual][gestor.clienteActual].nombre;
 		formularioPedidos.append(h2);
 	}
 
@@ -329,7 +316,7 @@ class Controlador {
 	// funciones llamadas por eventos
 	cambioComercial = () => {
 		gestor.comercialActual = frmComercial.comerciales.selectedIndex;
-		this.view.añadirCliente(gestor.clientes[gestor.comercialActual][0]);
+		this.view.añadirCliente();
 	};
 
 	//combobox categorias cambia combobox productos
@@ -342,6 +329,7 @@ class Controlador {
 	actualizarClienteActual = (event) => {
 		event.preventDefault();
 		gestor.clienteActual = parseInt(event.target.value);
+		this.view.limpiarPedido();
 		this.view.pintarH2();
 	};
 
@@ -363,12 +351,16 @@ class Controlador {
 		if (!gestor.pedidos[gestor.comercialActual]) {
 			gestor.pedidos[gestor.comercialActual] = [];
 		}
+
 		if (!gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
 			gestor.pedidos[gestor.comercialActual][gestor.clienteActual] = [];
 		}
-		gestor.pedidos[gestor.comercialActual][gestor.clienteActual].push(
-			lineaPedido
-		);
+		gestor.pedidos[gestor.comercialActual][gestor.clienteActual].push(lineaPedido);
+
+		for (const pedido of gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
+			console.log(pedido.idProducto);
+			console.log(gestor.pedidos[gestor.comercialActual][gestor.clienteActual][pedido.idProducto]);
+		}
 
 		const botonesClientes = frmComercial.getElementsByTagName('button');
 		for (const boton of botonesClientes) {
@@ -377,12 +369,5 @@ class Controlador {
 			}
 		}
 		this.view.pintarPedido(lineaPedido);
-
-		console.log(gestor.pedidos);
-		// for (const comercial of gestor.pedidos) {
-		// 	console.log(gestor.pedidos);
-		// 	console.log(comercial);
-		// 	console.log(lineaPedido);
-		// }
 	};
 }
