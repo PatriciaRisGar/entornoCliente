@@ -168,6 +168,7 @@ class View {
 	constructor(controlador) {
 		this.#controlador = controlador;
 	}
+
 	// añadir comerciales a combobox
 	cargarComerciales(comerciales) {
 		const selectComerciales = document.getElementsByName('comerciales')[0];
@@ -189,13 +190,28 @@ class View {
 			let option = document.createElement('option');
 			option.value = indice;
 			option.textContent = categoria;
-			option.addEventListener('click', this.cargarProductos(catalogo.productos));
+			option.addEventListener('click', function () {
+				// añadir productos a combobox dependiendo cual sea la categoria seleccionada al producirse el evento
+				const categoriaSeleccionada = frmControles.categorias.value;
+				const selectProductos = document.getElementsByName('productos')[0];
+				selectProductos.innerHTML = '';
+
+				for (const producto of catalogo.productos) {
+					if (producto.idCategoria == categoriaSeleccionada) {
+						let option = document.createElement('option');
+						option.value = producto.idProducto;
+						option.textContent = producto.nombreProducto;
+						selectProductos.appendChild(option);
+					}
+				}
+			});
 			selectCategorias.appendChild(option);
 			indice++;
 		}
 	}
-	// añadir productos a combobox dependiendo cual sea la categoria seleccionada
+
 	cargarProductos(productos) {
+		// añadir productos a combobox dependiendo cual sea la categoria seleccionada
 		const categoriaSeleccionada = frmControles.categorias.value;
 		const selectProductos = document.getElementsByName('productos')[0];
 		selectProductos.innerHTML = '';
@@ -217,7 +233,7 @@ class View {
 		//Si hay clientes los borro antes de añadir
 		const botones = formulario.getElementsByTagName('button');
 		if (botones.length > 0) {
-			for (var i = botones.length - 1; i >= 0; --i) {
+			for (let i = botones.length - 1; i >= 0; --i) {
 				botones[i].remove();
 			}
 		}
@@ -249,33 +265,34 @@ class View {
 	}
 
 	//Pintar tabla pedido
-	pintarPedido(lineaPedido) {
+	pintarPedido() {
 		const infoPedido = document.getElementById('pedido');
-		let precioUnidad;
-		let nombreProducto;
-		for (const producto of catalogo.productos) {
-			if (producto.idProducto == lineaPedido.idProducto) {
-				precioUnidad = producto.precioUnidad;
-				nombreProducto = producto.nombreProducto;
-			}
-		}
+		let total = 0;
 
 		this.limpiarPedido();
 		const div = document.createElement('div');
 		infoPedido.append(div);
 
 		const h3 = document.createElement('h3');
-		h3.textContent = 'TOTAL = ' + lineaPedido.unidades * precioUnidad;
+		for (const lineaPedido of gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
+			for (const producto of catalogo.productos) {
+				if (lineaPedido.idProducto == producto.idProducto) {
+					total += lineaPedido.unidades * producto.precioUnidad;
+				}
+			}
+		}
+		h3.textContent = 'TOTAL = ' + total;
 		div.appendChild(h3);
 
 		const botonFinPedido = document.createElement('button');
 		botonFinPedido.textContent = ' PEDIDO ENVIADO Y COBRADO ';
 		botonFinPedido.classList.add('boton');
+		botonFinPedido.addEventListener('click', this.eliminarPedido);
 		div.appendChild(botonFinPedido);
 
 		const divTable = document.createElement('div');
 		div.appendChild(divTable);
-		const tabla = `
+		let tabla = `
 			<table>
 				<thead>
 					<tr>
@@ -286,27 +303,90 @@ class View {
 						<th>Precio</th>
 					</tr>
 				</thead>
-				<tbody>
-					<tr>
-						<td>Modificar</td>
+				<tbody>`;
+		for (const lineaPedido of gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
+			tabla += `<tr>
+						<td> 
+						<button class='boton' value=${lineaPedido.idProducto} name='btnAñadirUnidad'> + </button>
+						<button class='boton' value=${lineaPedido.idProducto} name='btnRestarUnidad'> - </button>
+						</td> 
 						<td>${lineaPedido.unidades}</td>
-						<td>${lineaPedido.idProducto}</td>
-						<td>${nombreProducto}</td>
-						<td>${precioUnidad}</td>
-					</tr>
+						<td>${lineaPedido.idProducto}</td>`;
+			for (const producto of catalogo.productos) {
+				if (lineaPedido.idProducto == producto.idProducto) {
+					tabla += `
+					<td>${producto.nombreProducto}</td>
+					<td>${producto.precioUnidad * lineaPedido.unidades}</td>
+					</tr>`;
+				}
+			}
+		}
+		tabla += ` 
 				</tbody>
 			</table>`;
 		divTable.innerHTML = tabla;
+
+		//añadir unidad
+		const botonesAñadirUnidad = document.getElementsByName('btnAñadirUnidad');
+		const contextoThis = this;
+		for (const posicionBoton of botonesAñadirUnidad) {
+			posicionBoton.addEventListener('click', function () {
+				for (const lineaPedido of gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
+					if (lineaPedido.idProducto == posicionBoton.value) {
+						console.log('Sumando');
+						lineaPedido.unidades++;
+					}
+				}
+				contextoThis.limpiarPedido();
+				contextoThis.pintarPedido();
+			});
+		}
+
+		// restar unidad
+		const botonesRestarUnidad = document.getElementsByName('btnRestarUnidad');
+		for (const posicionBoton of botonesRestarUnidad) {
+			posicionBoton.addEventListener('click', function () {
+				for (const lineaPedido of gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
+					if (lineaPedido.idProducto == posicionBoton.value) {
+						console.log('Restando');
+						if (lineaPedido.unidades == 1) {
+							if (confirm('¿esta seguro que quiere eliminar este producto del pedido?')) {
+								gestor.pedidos[gestor.comercialActual][gestor.clienteActual] = gestor.pedidos[gestor.comercialActual][gestor.clienteActual].filter((lp) => lp != lineaPedido);
+							}
+						}
+						lineaPedido.unidades--;
+					}
+				}
+				contextoThis.limpiarPedido();
+				contextoThis.pintarPedido();
+			});
+		}
 	}
 
 	//Elimino el div generado en pedido
-	limpiarPedido() {
+	limpiarPedido = () => {
 		const infoPedido = document.getElementById('pedido');
 		const divHijo = infoPedido.querySelector('div');
 		if (divHijo) {
 			divHijo.parentNode.removeChild(divHijo);
 		}
-	}
+	};
+
+	eliminarPedido = () => {
+		if (confirm('¿Estás seguro que quieres dar por finalizado este pedido?')) {
+			this.limpiarPedido();
+			gestor.pedidos[gestor.comercialActual][gestor.clienteActual] = [];
+			const botonesClientes = frmComercial.getElementsByTagName('button');
+			for (const boton of botonesClientes) {
+				if (boton.value == gestor.clienteActual) {
+					console.log(boton.classList);
+					boton.classList.remove('pendiente');
+					boton.classList.add('pagado');
+				}
+			}
+		}
+		return;
+	};
 }
 
 class Controlador {
@@ -315,6 +395,7 @@ class Controlador {
 
 	// funciones llamadas por eventos
 	cambioComercial = () => {
+		gestor.clienteActual = 0;
 		gestor.comercialActual = frmComercial.comerciales.selectedIndex;
 		this.view.añadirCliente();
 	};
@@ -331,6 +412,9 @@ class Controlador {
 		gestor.clienteActual = parseInt(event.target.value);
 		this.view.limpiarPedido();
 		this.view.pintarH2();
+		if (gestor.pedidos[gestor.comercialActual] && gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
+			this.view.pintarPedido();
+		}
 	};
 
 	// Poner evento en cada boton del teclado unidades para cargar pedido
@@ -346,7 +430,6 @@ class Controlador {
 	crearPedido = (event) => {
 		const unidades = event.target.value;
 		const producto = frmControles.productos.value;
-		const lineaPedido = new LineaPedido(unidades, producto);
 
 		if (!gestor.pedidos[gestor.comercialActual]) {
 			gestor.pedidos[gestor.comercialActual] = [];
@@ -355,12 +438,16 @@ class Controlador {
 		if (!gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
 			gestor.pedidos[gestor.comercialActual][gestor.clienteActual] = [];
 		}
-		gestor.pedidos[gestor.comercialActual][gestor.clienteActual].push(lineaPedido);
 
 		for (const pedido of gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
-			console.log(pedido.idProducto);
-			console.log(gestor.pedidos[gestor.comercialActual][gestor.clienteActual][pedido.idProducto]);
+			if (pedido.idProducto == producto) {
+				alert('Ya existe este producto en el pedido, si quiere modificar la cantidad utilice los controles de la cuenta');
+				return;
+			}
 		}
+
+		const lineaPedido = new LineaPedido(unidades, producto);
+		gestor.pedidos[gestor.comercialActual][gestor.clienteActual].push(lineaPedido);
 
 		const botonesClientes = frmComercial.getElementsByTagName('button');
 		for (const boton of botonesClientes) {
@@ -368,6 +455,6 @@ class Controlador {
 				boton.classList.add('pendiente');
 			}
 		}
-		this.view.pintarPedido(lineaPedido);
+		this.view.pintarPedido();
 	};
 }
