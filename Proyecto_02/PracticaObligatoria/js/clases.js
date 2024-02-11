@@ -328,12 +328,11 @@ class View {
 
 		//añadir unidad
 		const botonesAñadirUnidad = document.getElementsByName('btnAñadirUnidad');
-		const contextoThis = this;
+		const contextoThis = this; // para no perder quien es this dentro del for.
 		for (const posicionBoton of botonesAñadirUnidad) {
 			posicionBoton.addEventListener('click', function () {
 				for (const lineaPedido of gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
 					if (lineaPedido.idProducto == posicionBoton.value) {
-						console.log('Sumando');
 						lineaPedido.unidades++;
 					}
 				}
@@ -348,9 +347,8 @@ class View {
 			posicionBoton.addEventListener('click', function () {
 				for (const lineaPedido of gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
 					if (lineaPedido.idProducto == posicionBoton.value) {
-						console.log('Restando');
 						if (lineaPedido.unidades == 1) {
-							if (confirm('¿esta seguro que quiere eliminar este producto del pedido?')) {
+							if (confirm('¿Esta seguro que quiere eliminar este producto del pedido?')) {
 								gestor.pedidos[gestor.comercialActual][gestor.clienteActual] = gestor.pedidos[gestor.comercialActual][gestor.clienteActual].filter((lp) => lp != lineaPedido);
 							}
 						}
@@ -368,7 +366,8 @@ class View {
 		const infoPedido = document.getElementById('pedido');
 		const divHijo = infoPedido.querySelector('div');
 		if (divHijo) {
-			divHijo.parentNode.removeChild(divHijo);
+			infoPedido.removeChild(divHijo);
+			// divHijo.parentNode.removeChild(divHijo); // Tambien se puede asi
 		}
 	};
 
@@ -393,7 +392,7 @@ class Controlador {
 	//le paso a la vista el controlador
 	view = new View(this);
 
-	// funciones llamadas por eventos
+	// Actualizo quien es el comercial actual y cargo sus clientes en la view
 	cambioComercial = () => {
 		gestor.clienteActual = 0;
 		gestor.comercialActual = frmComercial.comerciales.selectedIndex;
@@ -408,10 +407,11 @@ class Controlador {
 
 	//Clic en boton cliente. Ponemos el id cliente como clienteActual
 	actualizarClienteActual = (event) => {
-		event.preventDefault();
+		event.preventDefault(); // Al tener botones dentro de un formulario recarga la pagina
 		gestor.clienteActual = parseInt(event.target.value);
 		this.view.limpiarPedido();
 		this.view.pintarH2();
+		//compruebo si hay un pedido abierto para pintarlo
 		if (gestor.pedidos[gestor.comercialActual] && gestor.pedidos[gestor.comercialActual][gestor.clienteActual]) {
 			this.view.pintarPedido();
 		}
